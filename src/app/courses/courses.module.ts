@@ -25,13 +25,20 @@ import { EntityDataService, EntityDefinitionService, EntityMetadataMap} from '@n
 import {compareCourses, Course} from './model/course';
 
 import {compareLessons, Lesson} from './model/lesson';
+import { CourseResolver } from './courses.resolver';
+import { EffectsModule } from '@ngrx/effects';
+import { CoursesEffect } from './courses.effects';
+import { StoreModule } from '@ngrx/store';
+import { CoursesReducer } from './reducers/course.reducers';
 
 
 export const coursesRoutes: Routes = [
   {
     path: '',
-    component: HomeComponent
-
+    component: HomeComponent,
+    resolve: {
+      courses: CourseResolver //any call to /courses needs to wait until the resolver kicks in with data
+    }
   },
   {
     path: ':courseUrl',
@@ -58,7 +65,9 @@ export const coursesRoutes: Routes = [
     MatDatepickerModule,
     MatMomentDateModule,
     ReactiveFormsModule,
-    RouterModule.forChild(coursesRoutes)
+    RouterModule.forChild(coursesRoutes),
+    StoreModule.forFeature("courses", CoursesReducer),
+    EffectsModule.forFeature([CoursesEffect])
   ],
   declarations: [
     HomeComponent,

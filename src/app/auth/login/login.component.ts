@@ -7,6 +7,9 @@ import {AuthService} from "../auth.service";
 import {tap} from "rxjs/operators";
 import {noop} from "rxjs";
 import {Router} from "@angular/router";
+import { AppState } from '../../reducers';
+import { AuthActions } from '../action-types';
+import { AuthState } from '../reducers';
 
 @Component({
   selector: 'login',
@@ -20,6 +23,7 @@ export class LoginComponent implements OnInit {
   constructor(
       private fb:FormBuilder,
       private auth: AuthService,
+      private ngrxStore:Store<AuthState>,
       private router:Router) {
 
       this.form = fb.group({
@@ -35,6 +39,31 @@ export class LoginComponent implements OnInit {
 
   login() {
 
+    let email = this.form.get('email').value;
+    let password  = this.form.get('password').value;
+
+    this.auth.login(email, password)
+    .pipe(
+      tap(user => {
+         console.log("creatign a side effect using the rxjs tap operator" , user);
+         //here save user
+         this.ngrxStore.dispatch(AuthActions.login({user}));
+         this.router.navigateByUrl('/courses');
+      })
+    )
+    .subscribe({
+      next() {
+        noop();
+      },
+
+      error() {
+        alert("Login Failed for User");
+      },
+
+      complete() {
+        console.log('subscription is completed');
+      }
+    })
   }
 
 }
